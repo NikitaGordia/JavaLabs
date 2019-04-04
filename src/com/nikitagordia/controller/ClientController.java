@@ -1,5 +1,6 @@
 package com.nikitagordia.controller;
 
+import com.nikitagordia.exception.UnrecognizedComand;
 import com.nikitagordia.util.ClientContainer;
 import com.nikitagordia.util.ConsoleParser;
 import com.nikitagordia.view.ClientView;
@@ -18,13 +19,17 @@ public class ClientController {
 
         String input = view.read();
         while (!ConsoleParser.isExit(input)) {
-            long innerRequest = ConsoleParser.isInnerRequest(input);
-            if (innerRequest != -1) {
-                view.write(container.filterByInnerCall(innerRequest));
-            } else if (ConsoleParser.isOuterRequest(input)) {
-                view.write(container.filterByOuterCall());
-            } else {
-                view.alert("Unrecognized command(");
+            try {
+                long innerRequest = ConsoleParser.parseInnerRequest(input);
+                if (innerRequest != -1) {
+                    view.write(container.filterByInnerCall(innerRequest));
+                } else if (ConsoleParser.parseOuterRequest(input)) {
+                    view.write(container.filterByOuterCall());
+                } else {
+                    throw new UnrecognizedComand(input);
+                }
+            } catch (Exception e) {
+                view.alert(e.getMessage());
             }
 
             input = view.read();
